@@ -1,14 +1,16 @@
-import * as project from '../src/index';
+import * as index from '../src/index';
 
-describe('testing index file', () => {
-  test('0 + 0 should be 0', () => {
-    expect(project.add(0, 0)).toBe(0);
-  });
+describe('testing diceRoller file', () => {
 
-  test('round should be 1', ()=> {
-    const game = new project.Game();
-    game.increaseRound();
-    expect(game.round).toBe(1);
-    expect(game.round).toBeGreaterThan(0);
+  test('Scoring all 3s should be empty', ()=> {
+    const game = new index.DiceGame(4, 6, 3);
+    
+    expect(game.ScoreRound([3, 3, 3])).toBe(0);
+  })
+
+  test('Scoring should be 1', ()=> {
+    const game = new index.DiceGame(4, 6, 3);
+    
+    expect(game.ScoreRound([3, 3, 1, 9, 1])).toBe(1);
   })
 });

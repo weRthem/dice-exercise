@@ -1,0 +1,622 @@
+Skip to content
+Chat history
+You said:
+I am taking a programming interview test with this criteria 
+
+"Question - Dice Game Simulation – 80 marks
+Description
+There is a game that is played with 5 dice. The objective of the game is to
+obtain the lowest possible score. To that end, the rules of the game are as
+follows: - All dice are thrown on a board.
+- If there are any 3’s, all the 3’s are taken off the board and a score of 0 is
+awarded for this roll.
+- If there are not any 3’s, the lowest die is taken off the board and the value
+of that lowest die is awarded for this roll.
+- The remaining dice are now re-thrown and the same procedure as above is
+followed until there are no dice left on the board.
+- The total score for the game is the sum of all the rolls.
+Example
+- On the first roll you throw the following: 3,1,3,6,6
+o Since there are two 3’s, they are removed and your total is currently 0.
+- On the second roll (with 3 dice now – since the 3’s have been removed) you
+have the following: 2, 5, 5
+o You now remove the 2, giving you a total of 2 and there are two dice
+remaining.
+- You now roll 6,6
+o You remove one 6 giving you a total of 8 and have one dice left.
+-
+You now roll 3.
+o This scores 0 for this roll. This game is now finished and your game
+score is 8.
+
+Task
+Your task is to simulate this game over 10000 iterations and keep a count of all the
+possible game scores. (i.e. How many times did someone score 8? How many times did
+they score 2?).
+The output should look something like below. (Assuming for this sample output that
+only 2 dice were used for 100 simulations).
+Number of simulations was 100 using 2 dice.
+Total 0 occurs 0.1 occurred 10.0 times.
+Total 1 occurs 0.05 occurred 5.0 times.
+Total 2 occurs 0.14 occurred 14.0 times.
+Total 3 occurs 0.05 occurred 5.0 times.
+Total 4 occurs 0.07 occurred 7.0 times.
+Total 5 occurs 0.13 occurred 13.0 times.
+Total 6 occurs 0.15 occurred 15.0 times.
+Total 7 occurs 0.1 occurred 10.0 times.
+Total 8 occurs 0.1 occurred 10.0 times.
+Total 9 occurs 0.02 occurred 2.0 times.
+Total 10 occurs 0.05 occurred 5.0 times.
+Total 11 occurs 0.03 occurred 3.0 times.
+Total 12 occurs 0.01 occurred 1.0 times.
+Total simulation took 0.1 seconds.
+
+Marking Criteria
+- Does the solution look like it works? – 50%
+- Does the solution look well organized? Were there classes or functions created
+that matched the problem description? – 40%
+- Would it be easy to enhance the solution, to change the number of Dice used or
+to change the number of simulations? – 10%
+- If you use an AI tool (e.g. chatGPT) to help in creating your solution, please
+include your full conversation history as part of your submission."
+
+Heres my solution
+"export class DiceGame{
+    score : number
+    numberOfDice : number
+    maxDieRoll : number
+    freeRollValue : number
+
+    minDieRoll : number = 1;
+
+    constructor(numberOfDice : number, maxDieRoll : number, freeRollValue : number){
+        this.score = 0;
+        this.numberOfDice = numberOfDice;
+        this.maxDieRoll = maxDieRoll;
+        this.freeRollValue = freeRollValue;
+    }
+
+    public RunGameRound() : boolean{
+        if(this.numberOfDice <= 0) return false;
+
+        const diceRollsThisRound = this.RollRoundDice();
+
+        if(diceRollsThisRound.length > 0){
+            this.score += this.ScoreRound(diceRollsThisRound);
+        }
+
+        this.numberOfDice--;
+
+        return true;
+    }
+
+    RollRoundDice() : number[]{
+        const diceRollsThisRound : number[] = [];
+
+        for (let i = 0; i < this.numberOfDice; i++) {
+            const dieRoll : number = this.RollDie();
+
+            if(dieRoll === this.freeRollValue){
+                this.numberOfDice--;
+                continue;
+            }
+
+            diceRollsThisRound.push(dieRoll);
+        }
+
+        return diceRollsThisRound;
+    }
+
+    ScoreRound(diceRollsThisRound : number[]) : number{
+        let lowestRoll : number = diceRollsThisRound[0];
+
+        if(lowestRoll === this.minDieRoll) return lowestRoll;
+
+        if (lowestRoll === this.freeRollValue){
+            lowestRoll = 0;
+        }
+
+        for (let i = 1; i < diceRollsThisRound.length; i++) {
+            const roll = diceRollsThisRound[i];
+            
+            if(roll < lowestRoll && roll !== this.freeRollValue)
+            {
+                lowestRoll = roll;
+            }
+
+            if(lowestRoll === this.minDieRoll) return lowestRoll;
+        }
+
+        return lowestRoll;
+    }
+
+    RollDie() : number{
+        return Math.floor(Math.random() * this.maxDieRoll) + this.minDieRoll;
+    }
+}
+
+export class ScoreTracker{
+    scores : Map<number, number>
+    totalIterations : number
+    decimalPlaces : number
+
+    constructor(decimalPlaces : number){
+        this.scores = new Map<number, number>();
+        this.totalIterations = 0;
+        this.decimalPlaces = decimalPlaces;
+    }
+
+    public addScore(score : number) : void{
+
+        if(this.scores.has(score)){
+            let oldScoreCount = this.scores.get(score) as number;  
+
+            this.scores.set(score, oldScoreCount + 1);
+        }
+        else{
+            this.scores.set(score, 1);
+        }
+
+        this.totalIterations++;
+    }
+
+    public printScores() : void{
+        let allScores : number[] = [];
+
+        this.scores.forEach((totalOfScore, score) =>{
+            allScores.push(score);
+        });
+
+        allScores = allScores.sort((n1, n2) => n1 - n2);
+
+        for (let i = 0; i < allScores.length; i++) {
+            const score = allScores[i];
+            const scoreTotal : number = this.scores.get(score) as number;
+            const scoreFrequency = scoreTotal / this.totalIterations;
+
+            console.log(Total ${score} occurs ${scoreFrequency.toFixed(this.decimalPlaces)} occurred ${scoreTotal} times.);
+        }
+    }
+}
+
+const startTime : number = performance.now();
+
+const scoreTracker : ScoreTracker = new ScoreTracker(2);
+
+for (let i = 0; i < 1000; i++) {
+    const game : DiceGame = new DiceGame(5, 6, 3);
+
+    while(game.RunGameRound()){}
+    
+    scoreTracker.addScore(game.score);
+}
+
+scoreTracker.printScores();
+
+const endTime : number = performance.now();
+console.log(Total simulation took ${endTime - startTime} seconds);
+"
+ChatGPT said:
+
+Thanks for sharing your solution! You’re already in good shape — the code is readable, modular, and makes a solid attempt at following the problem description. However, there are some important logic errors and structural improvements that can help you score better, especially in the "Does it work?" and "Enhanceability" marking criteria.
+✅ What’s Good
+🔹 Structure & Modularity (Matches 40% marking criteria)
+
+    You’ve organized logic into classes (DiceGame, ScoreTracker), which aligns well with OOP principles.
+
+    Methods have single responsibilities: RollDie, ScoreRound, RunGameRound, etc.
+
+🔹 Reusability / Flexibility (Matches 10% marking criteria)
+
+    The game is parameterized by number of dice, die sides, and free roll value.
+
+    Could be reused for different configurations with small changes.
+
+❌ Problems (Especially with Logic) – Critical for the 50% “Does it work?” Mark
+
+Let’s break this down:
+🟥 1. Incorrect Handling of Dice Removal
+
+In the real rules:
+
+    On each turn, roll all remaining dice.
+
+    If any 3s appear, remove all the 3s and score 0 for that roll.
+
+    Else, remove the single lowest die (not all low dice), and score its value.
+
+    Then, reroll the remaining dice.
+
+❌ Your current approach:
+
+    RunGameRound() decrements numberOfDice by 1 each time unconditionally.
+
+    RollRoundDice() also decrements numberOfDice inside the loop if 3 appears, which double-counts.
+
+This leads to the dice count being reduced too fast and incorrectly.
+🟥 2. Scoring Logic is Flawed
+
+    In ScoreRound, you're:
+
+        Finding the lowest die, but not removing it from the actual dice pool.
+
+        Not properly simulating the “remove 3s or lowest die” rule.
+
+🟥 3. Loop Control in RunGameRound() is Wrong
+
+    The loop should continue until no dice remain, but your loop is tied to a fixed numberOfDice--, which doesn’t reflect how many dice are actually removed per turn.
+
+🟨 4. Performance Measurement is in ms
+
+    You print: Total simulation took ${endTime - startTime} seconds, but the value is in milliseconds.
+
+        Should divide by 1000.0 to get seconds.
+
+✅ Suggested Fixes and Final Version
+
+Here’s a corrected and enhanced version of your program in TypeScript:
+
+export class DiceGame {
+    remainingDice: number[];
+    score: number;
+    maxDieRoll: number;
+    freeRollValue: number;
+    minDieRoll: number = 1;
+
+    constructor(numberOfDice: number, maxDieRoll: number, freeRollValue: number) {
+        this.remainingDice = Array(numberOfDice).fill(0);
+        this.maxDieRoll = maxDieRoll;
+        this.freeRollValue = freeRollValue;
+        this.score = 0;
+    }
+
+    playGame(): number {
+        while (this.remainingDice.length > 0) {
+            this.rollAllDice();
+
+            // Check for any 3s
+            const freeDice = this.remainingDice.filter(die => die === this.freeRollValue);
+            if (freeDice.length > 0) {
+                // Remove all 3s
+                this.remainingDice = this.remainingDice.filter(die => die !== this.freeRollValue);
+                // Score 0 this round
+                continue;
+            }
+
+            // Remove the lowest die and add its value to the score
+            const lowestDie = Math.min(...this.remainingDice);
+            this.score += lowestDie;
+
+            // Remove one instance of the lowest die
+            const index = this.remainingDice.indexOf(lowestDie);
+            if (index !== -1) this.remainingDice.splice(index, 1);
+        }
+
+        return this.score;
+    }
+
+    private rollAllDice(): void {
+        this.remainingDice = this.remainingDice.map(() => this.rollDie());
+    }
+
+    private rollDie(): number {
+        return Math.floor(Math.random() * this.maxDieRoll) + this.minDieRoll;
+    }
+}
+
+export class ScoreTracker {
+    private scores: Map<number, number> = new Map();
+    private totalSimulations: number = 0;
+    private decimalPlaces: number;
+
+    constructor(decimalPlaces: number) {
+        this.decimalPlaces = decimalPlaces;
+    }
+
+    public addScore(score: number): void {
+        this.scores.set(score, (this.scores.get(score) ?? 0) + 1);
+        this.totalSimulations++;
+    }
+
+    public printScores(): void {
+        const sortedScores = [...this.scores.entries()].sort((a, b) => a[0] - b[0]);
+
+        for (const [score, count] of sortedScores) {
+            const frequency = (count / this.totalSimulations).toFixed(this.decimalPlaces);
+            console.log(`Total ${score} occurs ${frequency} occurred ${count} times.`);
+        }
+    }
+}
+
+Main Simulation Entry Point:
+
+const startTime = performance.now();
+
+const tracker = new ScoreTracker(2);
+const simulations = 10000;
+
+for (let i = 0; i < simulations; i++) {
+    const game = new DiceGame(5, 6, 3);
+    const score = game.playGame();
+    tracker.addScore(score);
+}
+
+tracker.printScores();
+
+const endTime = performance.now();
+console.log(`Number of simulations was ${simulations} using 5 dice.`);
+console.log(`Total simulation took ${(endTime - startTime) / 1000} seconds.`);
+
+🔚 Summary of Feedback
+Category	Comments
+✅ Functionality (50%)	❌ Logic had flaws in dice removal, scoring, and round control. Fixed in new version.
+✅ Organization (40%)	✅ Good modular structure using classes and functions.
+✅ Enhanceability (10%)	✅ Parameterized well, reusable for any dice/die settings.
+📝 AI Tool Use Disclosure	Make sure to include this conversation history in your submission, as requested.
+
+Would you like a ZIP-ready package version or help turning this into a UI version (e.g. web-based simulation)?
+You said:
+Heres my updated code "export class DiceGame{
+    score : number
+    numberOfDice : number
+    maxDieRoll : number
+    freeRollValue : number
+
+    minDieRoll : number = 1;
+
+    constructor(numberOfDice : number, maxDieRoll : number, freeRollValue : number){
+        this.score = 0;
+        this.numberOfDice = numberOfDice;
+        this.maxDieRoll = maxDieRoll;
+        this.freeRollValue = freeRollValue;
+    }
+
+    public RunGameRound() : boolean{
+        if(this.numberOfDice <= 0) return false;
+
+        const diceRollsThisRound = this.RollRoundDice();
+
+        if(diceRollsThisRound.length > 0){
+            this.score += this.ScoreRound(diceRollsThisRound);
+        }
+
+        this.numberOfDice--;
+
+        return true;
+    }
+
+    RollRoundDice() : number[]{
+        const diceRollsThisRound : number[] = [];
+
+        let remainingDiceAfterRound : number = this.numberOfDice;
+
+        for (let i = 0; i < this.numberOfDice; i++) {
+            const dieRoll : number = this.RollDie();
+
+            if(dieRoll === this.freeRollValue){
+                remainingDiceAfterRound--;
+            }
+
+            diceRollsThisRound.push(dieRoll);
+        }
+
+        this.numberOfDice = remainingDiceAfterRound;
+
+        return diceRollsThisRound;
+    }
+
+    ScoreRound(diceRollsThisRound : number[]) : number{
+        let lowestRoll : number = diceRollsThisRound[0];
+
+        if(lowestRoll === this.minDieRoll) return lowestRoll;
+
+
+        for (let i = 1; i < diceRollsThisRound.length; i++) {
+            const roll = diceRollsThisRound[i];
+
+            if(lowestRoll === this.freeRollValue) return 0;
+            
+            if(roll < lowestRoll)
+            {
+                lowestRoll = roll;
+            }
+
+            if(lowestRoll === this.minDieRoll) return lowestRoll;
+        }
+
+        return lowestRoll;
+    }
+
+    RollDie() : number{
+        return Math.floor(Math.random() * this.maxDieRoll) + this.minDieRoll;
+    }
+}
+
+export class ScoreTracker{
+    scores : Map<number, number>
+    totalIterations : number
+    decimalPlaces : number
+
+    constructor(decimalPlaces : number){
+        this.scores = new Map<number, number>();
+        this.totalIterations = 0;
+        this.decimalPlaces = decimalPlaces;
+    }
+
+    public addScore(score : number) : void{
+
+        if(this.scores.has(score)){
+            let oldScoreCount = this.scores.get(score) as number;  
+
+            this.scores.set(score, oldScoreCount + 1);
+        }
+        else{
+            this.scores.set(score, 1);
+        }
+
+        this.totalIterations++;
+    }
+
+    public printScores() : void{
+        let allScores : number[] = [];
+
+        this.scores.forEach((totalOfScore, score) =>{
+            allScores.push(score);
+        });
+
+        allScores = allScores.sort((n1, n2) => n1 - n2);
+
+        for (let i = 0; i < allScores.length; i++) {
+            const score = allScores[i];
+            const scoreTotal : number = this.scores.get(score) as number;
+            const scoreFrequency = scoreTotal / this.totalIterations;
+
+            console.log(Total ${score} occurs ${scoreFrequency.toFixed(this.decimalPlaces)} occurred ${scoreTotal} times.);
+        }
+    }
+}
+
+const startTime : number = performance.now();
+
+const scoreTracker : ScoreTracker = new ScoreTracker(2);
+
+for (let i = 0; i < 1000; i++) {
+    const game : DiceGame = new DiceGame(5, 6, 3);
+
+    while(game.RunGameRound()){}
+    
+    scoreTracker.addScore(game.score);
+}
+
+scoreTracker.printScores();
+
+const endTime : number = performance.now();
+console.log(Total simulation took ${(endTime - startTime) / 1000} seconds);
+"
+ChatGPT said:
+
+Thanks for sharing your updated code — you're on the right track, and it's clear you've made an effort to fix the dice removal logic. However, there are still a few key logic errors, and with a couple of targeted improvements, you can make your solution fully correct, robust, and interview-ready.
+✅ What’s Improved
+
+    You're now removing 3s properly by adjusting numberOfDice based on how many 3s were rolled — great improvement.
+
+    You’re avoiding decrementing dice count unconditionally in RunGameRound(), and instead doing it based on RollRoundDice() — this is closer to the spec.
+
+    You're maintaining the OOP structure and clear separation of responsibilities.
+
+❌ What Still Needs Fixing (Critical Issues)
+1. ❗ ScoreRound Logic is Flawed
+
+Current behavior:
+
+if(lowestRoll === this.freeRollValue) return 0;
+
+You're returning 0 if the first die in the array happens to be 3, even if there are no other 3s.
+
+Problem: This is not correct. You should:
+
+    First check if any of the dice are 3 (freeRollValue).
+
+    If there are 3s, score 0 for the round, and remove all 3s.
+
+    Otherwise, find the single lowest die, add that to the score, and remove only one instance of that die.
+
+2. ❗ You're Not Removing the Lowest Die from Future Rolls
+
+When you return the lowest roll in ScoreRound, you're not updating numberOfDice accordingly. You decrement it only once per round, regardless of whether you removed 3s or a single die — that’s incorrect.
+
+The correct dice count after a round should be:
+
+    If there were 3s, remove all 3s.
+
+    Else, remove only the lowest die (one die).
+
+✅ Recommended Fix (Updated DiceGame class only)
+
+Here’s how you can fix the logic to match the actual game rules:
+
+export class DiceGame {
+    score: number;
+    dice: number[];
+    maxDieRoll: number;
+    freeRollValue: number;
+    minDieRoll: number = 1;
+
+    constructor(numberOfDice: number, maxDieRoll: number, freeRollValue: number) {
+        this.score = 0;
+        this.maxDieRoll = maxDieRoll;
+        this.freeRollValue = freeRollValue;
+        this.dice = Array(numberOfDice).fill(0); // track remaining dice
+    }
+
+    public RunGameRound(): boolean {
+        if (this.dice.length <= 0) return false;
+
+        // Roll all remaining dice
+        this.dice = this.dice.map(() => this.RollDie());
+
+        // If any 3s, remove them, score 0
+        const hasThree = this.dice.includes(this.freeRollValue);
+        if (hasThree) {
+            this.dice = this.dice.filter(die => die !== this.freeRollValue);
+            return this.dice.length > 0;
+        }
+
+        // Else, find the lowest die, score it, and remove one occurrence of it
+        const lowest = Math.min(...this.dice);
+        this.score += lowest;
+
+        const index = this.dice.indexOf(lowest);
+        if (index !== -1) {
+            this.dice.splice(index, 1);
+        }
+
+        return this.dice.length > 0;
+    }
+
+    private RollDie(): number {
+        return Math.floor(Math.random() * this.maxDieRoll) + this.minDieRoll;
+    }
+}
+
+✅ This version:
+
+    Accurately removes all 3s when present.
+
+    Accurately scores only the lowest die otherwise.
+
+    Removes the correct number of dice per turn.
+
+    Tracks dice count using an actual array (more natural for this simulation than a number).
+
+⚙ Your ScoreTracker and Simulation Loop Are Good
+
+Your ScoreTracker class and simulation loop logic are working well. Just fix this one line for correctness:
+
+console.log(`Total simulation took ${(endTime - startTime) / 1000} seconds`);
+
+✅ You already added / 1000, so this is now correct!
+✅ Sample Output Format (Just a reminder)
+
+Ensure your final output is in this format (which it is, mostly):
+
+Number of simulations was 10000 using 5 dice.
+Total 0 occurs 0.05 occurred 500 times.
+Total 1 occurs 0.03 occurred 300 times.
+...
+Total simulation took 0.123 seconds.
+
+🔚 Final Tips for Interview Submission
+
+    ✅ Include the full conversation history with ChatGPT (you already mentioned this).
+
+    ✅ Add comments in your code to explain key logic (just a few).
+
+    ✅ Consider adding optional parameters to change dice count or simulations easily.
+
+    🚀 Optional enhancement: You can make a small CLI wrapper to accept number of dice and simulations from command line.
+
+Would you like me to provide the full corrected code with comments and a cleaned-up CLI wrapper as a bonus?
+
+
+ChatGPT can make mistakes. Check important info.
