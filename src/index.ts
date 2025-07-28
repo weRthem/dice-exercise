@@ -1,3 +1,8 @@
+const TOTAL_GAMES : number = 1000;
+const NUMBER_OF_DICE : number = 5;
+const MAX_DIE_ROLL : number = 6;
+const FREE_ROLL_VALUE : number = 3;
+
 export class DiceGame{
     score : number
     numberOfDice : number
@@ -49,9 +54,6 @@ export class DiceGame{
 
     ScoreRound(diceRollsThisRound : number[]) : number{
         let lowestRoll : number = diceRollsThisRound[0];
-
-        if(lowestRoll === this.minDieRoll) return lowestRoll;
-
 
         for (let i = 1; i < diceRollsThisRound.length; i++) {
             const roll = diceRollsThisRound[i];
@@ -122,8 +124,8 @@ const startTime : number = performance.now();
 
 const scoreTracker : ScoreTracker = new ScoreTracker(2);
 
-for (let i = 0; i < 1000; i++) {
-    const game : DiceGame = new DiceGame(5, 6, 3);
+for (let i = 0; i < TOTAL_GAMES; i++) {
+    const game : DiceGame = new DiceGame(NUMBER_OF_DICE,MAX_DIE_ROLL, FREE_ROLL_VALUE);
 
     while(game.RunGameRound()){}
     
